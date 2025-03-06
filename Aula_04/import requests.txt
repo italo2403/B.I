@@ -1,0 +1,18 @@
+import requests
+from bs4 import BeautifulSoup
+
+# URL da página que queremos extrair os dados
+url = "https://exemplo.com/noticias"
+
+# Faz a requisição HTTP para obter o HTML da página
+response = requests.get(url)
+
+# Analisa o HTML usando BeautifulSoup
+soup = BeautifulSoup(response.text, "html.parser")
+
+# Busca todos os títulos das notícias
+noticias = soup.find_all("h2", class_="titulo-noticia")
+
+# Exibe os títulos encontrados
+for noticia in noticias:
+    print(noticia.text)

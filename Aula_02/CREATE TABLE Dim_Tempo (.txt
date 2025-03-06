@@ -1,0 +1,63 @@
+CREATE TABLE Dim_Tempo (
+    id_tempo INT PRIMARY KEY,
+    ano INT,
+    mes INT,
+    dia INT
+);
+
+CREATE TABLE Dim_Produto (
+    id_produto INT PRIMARY KEY,
+    categoria VARCHAR(50),
+    marca VARCHAR(50),
+    nome_produto VARCHAR(50)
+);
+
+CREATE TABLE Dim_Localizacao (
+    id_localizacao INT PRIMARY KEY,
+    cidade VARCHAR(50),
+    estado VARCHAR(50),
+    pais VARCHAR(50)
+);
+
+CREATE TABLE Fato_Vendas (
+    id_venda INT PRIMARY KEY,
+    id_tempo INT,
+    id_produto INT,
+    id_localizacao INT,
+    quantidade_vendida INT,
+    valor_total DECIMAL(10,2),
+    FOREIGN KEY (id_tempo) REFERENCES Dim_Tempo(id_tempo),
+    FOREIGN KEY (id_produto) REFERENCES Dim_Produto(id_produto),
+    FOREIGN KEY (id_localizacao) REFERENCES Dim_Localizacao(id_localizacao)
+);
+
+
+
+Exemplo de Consulta OLAP: Total de Vendas por Estado e Ano
+🚀 Resultado: Exibe o total de vendas por estado e ano.
+
+SELECT L.estado, T.ano, SUM(F.valor_total) AS total_vendas
+FROM Fato_Vendas F
+JOIN Dim_Tempo T ON F.id_tempo = T.id_tempo
+JOIN Dim_Localizacao L ON F.id_localizacao = L.id_localizacao
+GROUP BY L.estado, T.ano
+ORDER BY T.ano DESC, total_vendas DESC;
+
+Imagine que queremos calcular o valor médio de vendas por produto.
+
+SELECT P.nome_produto, AVG(F.valor_total) AS media_vendas
+FROM Fato_Vendas F
+JOIN Dim_Produto P ON F.id_produto = P.id_produto
+GROUP BY P.nome_produto;
+
+🚨 O Problema:
+Essa consulta parece correta, mas pode gerar um resultado ilusório, pois está calculando a média dos valores totais de venda sem considerar a quantidade de unidades vendidas.
+
+🔴 Correção: Usar uma média ponderada:
+SELECT P.nome_produto, 
+       SUM(F.valor_total) / SUM(F.quantidade_vendida) AS preco_medio_real
+FROM Fato_Vendas F
+JOIN Dim_Produto P ON F.id_produto = P.id_produto
+GROUP BY P.nome_produto;
+
+
